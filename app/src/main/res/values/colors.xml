@@ -11,7 +11,12 @@
     <color name="text_box_background">#E7E7E7</color>
     <color name="blue_text">#0166ff</color>
     <color name="title_bar_color">#EB164E</color>
-    <color name="activitybackground">#eeeeee</color>
+    <color name="activitybackground">#ffffff</color>
     <color name="activityfont">#3f3f3f</color>
     <color name="colorPrimary">#FF3700B3</color>
+    <color name="primaryTextColor">#000</color>
+    <color name="darkPurple">#3E065F</color>
+    <color name="standardPurple">#700B97</color>
+    <color name="lightPurple">#8E05C2</color>
+    <color name="malachite">#53DD6C</color>
 </resources>
