@@ -19,4 +19,5 @@
     <color name="standardPurple">#700B97</color>
     <color name="lightPurple">#8E05C2</color>
     <color name="malachite">#53DD6C</color>
+    <color name="darkGrey">#111</color>
 </resources>
