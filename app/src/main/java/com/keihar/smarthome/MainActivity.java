@@ -45,6 +45,8 @@ import org.eclipse.paho.client.mqttv3.MqttException;
 import org.eclipse.paho.client.mqttv3.MqttMessage;
 
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 import java.util.Locale;
 
 public class MainActivity extends AppCompatActivity {
@@ -55,12 +57,14 @@ public class MainActivity extends AppCompatActivity {
     TextView subtxtTargetTemp = null;
     TextInputEditText inputUpdateTemp = null;
     Button btnUpdateTemp = null;
-    Switch switchActivator1 = null;
-    Switch switchActivator2 = null;
+    Switch activatorSwitch = null;
+    Switch lightSwitch = null;
     FloatingActionButton micBtn = null;
 
     SpeechRecognizer speechRecognizer;
-    int targetTemp = 0;
+    boolean isActuatorSwitchChecked = false;
+    boolean isLightSwitchChecked = false;
+    int targetTemp = 20;
     int currentTemp = 18;
     final int RecordAudioRequestCode = 200;
 
@@ -71,7 +75,7 @@ public class MainActivity extends AppCompatActivity {
 //    private static final String MQTT_BASE_TOPIC = "su-dsv/iot22/6-5/";
 //    private static final String[] MQTT_TOPICS_TO_SUBSCRIBE = {"actuators/1/status", "actuators/2/status", "temperature", "temperature-setpoint/status"};
 //
-//    private CompoundButton.OnCheckedChangeListener switchActivator1Listener = new CompoundButton.OnCheckedChangeListener() {
+//    private CompoundButton.OnCheckedChangeListener activatorSwitchListener = new CompoundButton.OnCheckedChangeListener() {
 //        public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
 //            MqttMessage message = new MqttMessage((isChecked ? "1" : "0").getBytes());
 //            try {
@@ -82,7 +86,7 @@ public class MainActivity extends AppCompatActivity {
 //        }
 //    };
 //
-//    private CompoundButton.OnCheckedChangeListener switchActivator2Listener = new CompoundButton.OnCheckedChangeListener() {
+//    private CompoundButton.OnCheckedChangeListener lightSwitchListener = new CompoundButton.OnCheckedChangeListener() {
 //        public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
 //            MqttMessage message = new MqttMessage((isChecked ? "1" : "0").getBytes());
 //            try {
@@ -105,13 +109,14 @@ public class MainActivity extends AppCompatActivity {
         subtxtTargetTemp = (TextView) findViewById(R.id.ttemp_bottom);
         inputUpdateTemp = (TextInputEditText) findViewById(R.id.txtUpdateTemp);
         btnUpdateTemp = (Button) findViewById(R.id.btnUpdateTemp);
-        switchActivator1 = (Switch) findViewById(R.id.activatorBtn1);
-        switchActivator2 = (Switch) findViewById(R.id.activatorBtn2);
+        activatorSwitch = (Switch) findViewById(R.id.activatorBtn1);
+        lightSwitch = (Switch) findViewById(R.id.activatorBtn2);
         micBtn = (FloatingActionButton) findViewById(R.id.micFab);
 
         // Presses submit btn when clicking "done" on keyboard
         inputUpdateTemp.setOnEditorActionListener((v, actionId, event) -> {
-            if ((event != null && (event.getKeyCode() == KeyEvent.KEYCODE_ENTER)) || (actionId == EditorInfo.IME_ACTION_DONE))
+            if ((event != null && (event.getKeyCode() == KeyEvent.KEYCODE_ENTER)) ||
+                    (actionId == EditorInfo.IME_ACTION_DONE))
                 btnUpdateTemp.performClick();
             return false;
         });
@@ -124,12 +129,13 @@ public class MainActivity extends AppCompatActivity {
 
         btnUpdateTemp.setOnClickListener(v -> {
             String text = String.valueOf(inputUpdateTemp.getText());
-            try{
+            try {
                 targetTemp = Integer.parseInt(text);
                 // Hides Keyboard
                 View view = this.getCurrentFocus();
                 if (view != null) {
-                    InputMethodManager imm = (InputMethodManager)getSystemService(Context.INPUT_METHOD_SERVICE);
+                    InputMethodManager imm = (InputMethodManager) getSystemService(
+                            Context.INPUT_METHOD_SERVICE);
                     imm.hideSoftInputFromWindow(view.getWindowToken(), 0);
                 }
                 // Updates UI Elements
@@ -138,23 +144,28 @@ public class MainActivity extends AppCompatActivity {
                 //mqttClient.publish(MQTT_BASE_TOPIC + "temperature-setpoint", message);
                 inputUpdateTemp.setText("");
                 inputUpdateTemp.clearFocus();
+            } catch (Exception e) {
             }
-            catch (Exception e){}
         });
 
-        //switchActivator1.setOnCheckedChangeListener(switchActivator1Listener);
-        //switchActivator2.setOnCheckedChangeListener(switchActivator2Listener);
+        //activatorSwitch.setOnCheckedChangeListener(activatorSwitchListener);
+        //lightSwitch.setOnCheckedChangeListener(lightSwitchListener);
+        activatorSwitch.setOnCheckedChangeListener((buttonView, isChecked) -> isActuatorSwitchChecked = isChecked);
+        lightSwitch.setOnCheckedChangeListener((buttonView, isChecked) -> isLightSwitchChecked = isChecked);
 
         // Speech Permissions
-        if(ContextCompat.checkSelfPermission(this, Manifest.permission.RECORD_AUDIO) != PackageManager.PERMISSION_GRANTED){
+        if (ContextCompat.checkSelfPermission(this,
+                Manifest.permission.RECORD_AUDIO) != PackageManager.PERMISSION_GRANTED) {
             checkPermission();
         }
 
         // Speech Set Up
         speechRecognizer = SpeechRecognizer.createSpeechRecognizer(this);
         final Intent speechRecognizerIntent = new Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH);
-        speechRecognizerIntent.putExtra(RecognizerIntent.EXTRA_LANGUAGE_MODEL,RecognizerIntent.LANGUAGE_MODEL_FREE_FORM);
-        speechRecognizerIntent.putExtra(RecognizerIntent.EXTRA_LANGUAGE, Locale.getDefault());
+        speechRecognizerIntent.putExtra(RecognizerIntent.EXTRA_LANGUAGE_MODEL,
+                RecognizerIntent.LANGUAGE_MODEL_FREE_FORM);
+        speechRecognizerIntent.putExtra(RecognizerIntent.EXTRA_LANGUAGE,
+                Locale.getDefault());
 
         // Speech Functions Events
         speechRecognizer.setRecognitionListener(new RecognitionListener() {
@@ -192,8 +203,9 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onResults(Bundle bundle) {
                 System.out.println("results ready");
-                ArrayList<String> data = bundle.getStringArrayList(SpeechRecognizer.RESULTS_RECOGNITION);
-                subtxtCurrentTemp.setText(data.get(0));
+                ArrayList<String> data = bundle.getStringArrayList(
+                        SpeechRecognizer.RESULTS_RECOGNITION);
+                processSpeech(data.get(0));
                 System.out.println(data.get(0));
                 popupWindow.dismiss();
             }
@@ -210,7 +222,7 @@ public class MainActivity extends AppCompatActivity {
         });
 
         micBtn.setOnTouchListener((view, motionEvent) -> {
-            if (motionEvent.getAction() == MotionEvent.ACTION_DOWN){
+            if (motionEvent.getAction() == MotionEvent.ACTION_DOWN) {
                 speechRecognizer.startListening(speechRecognizerIntent);
             }
             return false;
@@ -243,13 +255,13 @@ public class MainActivity extends AppCompatActivity {
 //                    targetTemp = Math.round(Float.parseFloat(new String(message.getPayload())));
 //                    updateTempUI(false);
 //                } else if (topic.equals(MQTT_BASE_TOPIC + "actuators/1/status")) {
-//                    switchActivator1.setOnCheckedChangeListener(null);
-//                    switchActivator1.setChecked((new String(message.getPayload())).equals("1"));
-//                    switchActivator1.setOnCheckedChangeListener(switchActivator1Listener);
+//                    activatorSwitch.setOnCheckedChangeListener(null);
+//                    activatorSwitch.setChecked((new String(message.getPayload())).equals("1"));
+//                    activatorSwitch.setOnCheckedChangeListener(activatorSwitchListener);
 //                } else if (topic.equals(MQTT_BASE_TOPIC + "actuators/2/status")) {
-//                    switchActivator2.setOnCheckedChangeListener(null);
-//                    switchActivator2.setChecked((new String(message.getPayload())).equals("1"));
-//                    switchActivator2.setOnCheckedChangeListener(switchActivator2Listener);
+//                    lightSwitch.setOnCheckedChangeListener(null);
+//                    lightSwitch.setChecked((new String(message.getPayload())).equals("1"));
+//                    lightSwitch.setOnCheckedChangeListener(lightSwitchListener);
 //                }
 //            }
 //
@@ -269,16 +281,18 @@ public class MainActivity extends AppCompatActivity {
     // Mic Permissions section
     private void checkPermission() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-            ActivityCompat.requestPermissions(this,new String[]{Manifest.permission.RECORD_AUDIO},RecordAudioRequestCode);
+            ActivityCompat.requestPermissions(this,
+                    new String[]{Manifest.permission.RECORD_AUDIO}, RecordAudioRequestCode);
         }
     }
 
     @Override
-    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions,
+                                           @NonNull int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
-        if (requestCode == RecordAudioRequestCode && grantResults.length > 0 ){
-            if(grantResults[0] == PackageManager.PERMISSION_GRANTED)
-                Toast.makeText(this,"Permission Granted",Toast.LENGTH_SHORT).show();
+        if (requestCode == RecordAudioRequestCode && grantResults.length > 0) {
+            if (grantResults[0] == PackageManager.PERMISSION_GRANTED)
+                Toast.makeText(this, "Permission Granted", Toast.LENGTH_SHORT).show();
         }
     }
 
@@ -327,7 +341,7 @@ public class MainActivity extends AppCompatActivity {
 //        }
 //    }
 
-    protected void updateTempUI(boolean showSnackbar){
+    protected void updateTempUI(boolean showSnackbar) {
         txtCurrentTemp.setText(currentTemp + "°C");
         txtTargetTemp.setText(targetTemp + "°C");
         int tempLeft = targetTemp - currentTemp;
@@ -340,11 +354,68 @@ public class MainActivity extends AppCompatActivity {
         }
 
         // Snackbar section
-        final Snackbar snackBar = Snackbar.make(findViewById(android.R.id.content), "Updated Temperature", Snackbar.LENGTH_LONG);
+        final Snackbar snackBar = Snackbar.make(findViewById(android.R.id.content),
+                "Updated Temperature to " + targetTemp + "°C", Snackbar.LENGTH_LONG);
         snackBar.setTextColor(Color.WHITE);
         snackBar.setAction("OK", v -> {
             snackBar.dismiss();
         });
         snackBar.show();
     }
+
+    private void processSpeech(String out) {
+        String[] wordsArr = out.split(" ");
+        List<String> wordsList = Arrays.asList(wordsArr);
+
+        //Turn Lights
+        int index = wordsList.indexOf("turn");
+        if (index != -1) {
+            if (wordsArr.length > index + 1 && (wordsArr[index + 1].equals("on") || wordsArr[wordsArr.length - 1].equals("on"))) {
+                if (wordsList.contains("actuator") || wordsList.contains("plug")) {
+                    if (!isActuatorSwitchChecked) {
+                        activatorSwitch.performClick();
+                        Toast.makeText(this, "Turned the actuator on",
+                                Toast.LENGTH_SHORT).show();
+                    }
+                }
+                if (wordsList.contains("light") || wordsList.contains("lights")) {
+                    if (!isLightSwitchChecked) {
+                        lightSwitch.performClick();
+                        Toast.makeText(this, "Turned the lights on",
+                                Toast.LENGTH_SHORT).show();
+                    }
+                }
+            }
+
+            if (wordsArr.length > index + 1 && (wordsArr[index + 1].equals("off") || wordsArr[wordsArr.length - 1].equals("off"))) {
+                if (wordsList.contains("actuator") || wordsList.contains("plug")) {
+                    if (isActuatorSwitchChecked) {
+                        activatorSwitch.performClick();
+                        Toast.makeText(this, "Turned the actuator off",
+                                Toast.LENGTH_SHORT).show();
+                    }
+                }
+                if (wordsList.contains("light") || wordsList.contains("lights")) {
+                    if (isLightSwitchChecked) {
+                        lightSwitch.performClick();
+                        Toast.makeText(this, "Turned the lights off",
+                                Toast.LENGTH_SHORT).show();
+                    }
+                }
+            }
+        }
+
+        //Temperature
+        if (wordsList.contains("temperature")) {
+            for (String str : wordsArr) {
+                if (str.indexOf('°') != -1) {
+                    inputUpdateTemp.setText(str.substring(0, str.length() - 1));
+                    btnUpdateTemp.performClick();
+                    break;
+                }
+            }
+        }
+    }
+
+
 }

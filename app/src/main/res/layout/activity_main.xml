@@ -182,7 +182,7 @@
             android:id="@+id/actuators_title"
             android:layout_width="fill_parent"
             android:layout_height="wrap_content"
-            android:text="Actuators:"
+            android:text="Other controls:"
             android:textStyle="bold"
             android:textSize="24sp"
             android:layout_marginHorizontal="15dp" />
@@ -223,7 +223,7 @@
                     android:layout_marginEnd="10dp"
                     android:layout_marginBottom="10dp"
                     android:layout_toRightOf="@id/activatorImg1"
-                    android:text="Actuator #1"
+                    android:text="Actuator"
                     android:textSize="18sp" />
                 <Switch android:id="@+id/activatorBtn1"
                     android:layout_width="wrap_content"
@@ -251,7 +251,7 @@
                     android:layout_width="50dp"
                     android:layout_height="50dp"
                     android:layout_centerVertical="true"
-                    app:srcCompat="@drawable/energy"
+                    app:srcCompat="@drawable/lamp"
                     app:tint="?colorPrimary" />
 
                 <TextView
@@ -262,7 +262,7 @@
                     android:layout_marginEnd="10dp"
                     android:layout_marginBottom="10dp"
                     android:layout_toRightOf="@id/activatorImg2"
-                    android:text="Actuator #2"
+                    android:text="Lights"
                     android:textSize="18sp" />
                 <Switch android:id="@+id/activatorBtn2"
                     android:layout_width="wrap_content"
