@@ -367,10 +367,11 @@ public class MainActivity extends AppCompatActivity {
         String[] wordsArr = out.split(" ");
         List<String> wordsList = Arrays.asList(wordsArr);
 
-        //Turn Lights
+        //Turn plugs on/off
         int index = wordsList.indexOf("turn");
         if (index != -1) {
-            if (wordsArr.length > index + 1 && (wordsArr[index + 1].equals("on") || wordsArr[wordsArr.length - 1].equals("on"))) {
+            if (wordsArr.length > index + 1 && (wordsArr[index + 1].equals("on") ||
+                    wordsArr[wordsArr.length - 1].equals("on"))) {
                 if (wordsList.contains("actuator") || wordsList.contains("plug")) {
                     if (!isActuatorSwitchChecked) {
                         activatorSwitch.performClick();
