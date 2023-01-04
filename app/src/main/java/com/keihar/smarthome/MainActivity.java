@@ -410,6 +410,11 @@ public class MainActivity extends AppCompatActivity {
         if (wordsList.contains("temperature")) {
             for (String str : wordsArr) {
                 int tempNum = wordToNum(str);
+                int strToInt = -1;
+                try {
+                    strToInt = Integer.parseInt(str);
+                    tempNum = strToInt;
+                } catch(Exception e){}
                 if (str.indexOf('°') != -1) {
                     inputUpdateTemp.setText(str.substring(0, str.length() - 1));
                     btnUpdateTemp.performClick();
