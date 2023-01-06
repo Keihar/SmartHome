@@ -35,7 +35,8 @@ import com.google.android.material.snackbar.Snackbar;
 import com.google.android.material.textfield.TextInputEditText;
 import com.google.android.material.textfield.TextInputLayout;
 
-import org.eclipse.paho.android.service.MqttAndroidClient;
+import info.mqtt.android.service.Ack;
+import info.mqtt.android.service.MqttAndroidClient;
 import org.eclipse.paho.client.mqttv3.IMqttActionListener;
 import org.eclipse.paho.client.mqttv3.IMqttDeliveryToken;
 import org.eclipse.paho.client.mqttv3.IMqttToken;
@@ -70,32 +71,24 @@ public class MainActivity extends AppCompatActivity {
 
     PopupWindow popupWindow;
 
-//    private MqttAndroidClient mqttClient;
-//    private static final String MQTT_BROKER = "tcp://test.mosquitto.org:1883";
-//    private static final String MQTT_BASE_TOPIC = "su-dsv/iot22/6-5/";
-//    private static final String[] MQTT_TOPICS_TO_SUBSCRIBE = {"actuators/1/status", "actuators/2/status", "temperature", "temperature-setpoint/status"};
-//
-//    private CompoundButton.OnCheckedChangeListener activatorSwitchListener = new CompoundButton.OnCheckedChangeListener() {
-//        public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-//            MqttMessage message = new MqttMessage((isChecked ? "1" : "0").getBytes());
-//            try {
-//                mqttClient.publish(MQTT_BASE_TOPIC + "actuators/1", message);
-//            } catch (MqttException e) {
-//                e.printStackTrace();
-//            }
-//        }
-//    };
-//
-//    private CompoundButton.OnCheckedChangeListener lightSwitchListener = new CompoundButton.OnCheckedChangeListener() {
-//        public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-//            MqttMessage message = new MqttMessage((isChecked ? "1" : "0").getBytes());
-//            try {
-//                mqttClient.publish(MQTT_BASE_TOPIC + "actuators/2", message);
-//            } catch (MqttException e) {
-//                e.printStackTrace();
-//            }
-//        }
-//    };
+    private MqttAndroidClient mqttClient;
+    private static final String MQTT_BROKER = "tcp://test.mosquitto.org:1883";
+    private static final String MQTT_BASE_TOPIC = "su-dsv/iot22/6-5/";
+    private static final String[] MQTT_TOPICS_TO_SUBSCRIBE = {"actuators/1/status", "actuators/2/status", "temperature", "temperature-setpoint/status"};
+
+    private CompoundButton.OnCheckedChangeListener activatorSwitchListener = new CompoundButton.OnCheckedChangeListener() {
+        public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+            MqttMessage message = new MqttMessage((isChecked ? "1" : "0").getBytes());
+            mqttClient.publish(MQTT_BASE_TOPIC + "actuators/1", message);
+        }
+    };
+
+    private CompoundButton.OnCheckedChangeListener lightSwitchListener = new CompoundButton.OnCheckedChangeListener() {
+        public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+            MqttMessage message = new MqttMessage((isChecked ? "1" : "0").getBytes());
+            mqttClient.publish(MQTT_BASE_TOPIC + "actuators/2", message);
+        }
+    };
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -141,17 +134,17 @@ public class MainActivity extends AppCompatActivity {
                 // Updates UI Elements
                 updateTempUI(true);
                 MqttMessage message = new MqttMessage(Integer.toString(targetTemp).getBytes());
-                //mqttClient.publish(MQTT_BASE_TOPIC + "temperature-setpoint", message);
+                mqttClient.publish(MQTT_BASE_TOPIC + "temperature-setpoint", message);
                 inputUpdateTemp.setText("");
                 inputUpdateTemp.clearFocus();
             } catch (Exception e) {
             }
         });
 
-        //activatorSwitch.setOnCheckedChangeListener(activatorSwitchListener);
-        //lightSwitch.setOnCheckedChangeListener(lightSwitchListener);
-        activatorSwitch.setOnCheckedChangeListener((buttonView, isChecked) -> isActuatorSwitchChecked = isChecked);
-        lightSwitch.setOnCheckedChangeListener((buttonView, isChecked) -> isLightSwitchChecked = isChecked);
+        activatorSwitch.setOnCheckedChangeListener(activatorSwitchListener);
+        lightSwitch.setOnCheckedChangeListener(lightSwitchListener);
+        //activatorSwitch.setOnCheckedChangeListener((buttonView, isChecked) -> isActuatorSwitchChecked = isChecked);
+        //lightSwitch.setOnCheckedChangeListener((buttonView, isChecked) -> isLightSwitchChecked = isChecked);
 
         // Speech Permissions
         if (ContextCompat.checkSelfPermission(this,
@@ -228,48 +221,48 @@ public class MainActivity extends AppCompatActivity {
             return false;
         });
 
-//        mqttConnect();
+        mqttConnect();
 
         // MQTT setup
-//        mqttClient.setCallback(new MqttCallbackExtended() {
-//            @Override
-//            public void connectComplete(boolean reconnect, String serverURI) {
-//                System.out.println((reconnect ? "Reconnected" :" Connected") + " to : " + serverURI);
-//                for (String topic: MQTT_TOPICS_TO_SUBSCRIBE) {
-//                    mqttSubscribe(MQTT_BASE_TOPIC + topic);
-//                }
-//            }
-//            @Override
-//            public void connectionLost(Throwable cause) {
-//                System.out.println("The Connection was lost.");
-//            }
-//            @Override
-//            public void messageArrived(String topic, MqttMessage message) throws Exception {
-//                String newMessage = new String(message.getPayload());
-//                System.out.println("Incoming message: " + newMessage);
-//
-//                if (topic.equals(MQTT_BASE_TOPIC + "temperature")) {
-//                    currentTemp = Math.round(Float.parseFloat(new String(message.getPayload())));
-//                    updateTempUI(false);
-//                } else if (topic.equals(MQTT_BASE_TOPIC + "temperature-setpoint/status")) {
-//                    targetTemp = Math.round(Float.parseFloat(new String(message.getPayload())));
-//                    updateTempUI(false);
-//                } else if (topic.equals(MQTT_BASE_TOPIC + "actuators/1/status")) {
-//                    activatorSwitch.setOnCheckedChangeListener(null);
-//                    activatorSwitch.setChecked((new String(message.getPayload())).equals("1"));
-//                    activatorSwitch.setOnCheckedChangeListener(activatorSwitchListener);
-//                } else if (topic.equals(MQTT_BASE_TOPIC + "actuators/2/status")) {
-//                    lightSwitch.setOnCheckedChangeListener(null);
-//                    lightSwitch.setChecked((new String(message.getPayload())).equals("1"));
-//                    lightSwitch.setOnCheckedChangeListener(lightSwitchListener);
-//                }
-//            }
-//
-//            @Override
-//            public void deliveryComplete(IMqttDeliveryToken token) {
-//
-//            }
-//        });
+        mqttClient.setCallback(new MqttCallbackExtended() {
+            @Override
+            public void connectComplete(boolean reconnect, String serverURI) {
+                System.out.println((reconnect ? "Reconnected" :" Connected") + " to : " + serverURI);
+                for (String topic: MQTT_TOPICS_TO_SUBSCRIBE) {
+                    mqttSubscribe(MQTT_BASE_TOPIC + topic);
+                }
+            }
+            @Override
+            public void connectionLost(Throwable cause) {
+                System.out.println("The Connection was lost.");
+            }
+            @Override
+            public void messageArrived(String topic, MqttMessage message) throws Exception {
+                String newMessage = new String(message.getPayload());
+                System.out.println("Incoming message: " + newMessage);
+
+                if (topic.equals(MQTT_BASE_TOPIC + "temperature")) {
+                    currentTemp = Math.round(Float.parseFloat(new String(message.getPayload())));
+                    updateTempUI(false);
+                } else if (topic.equals(MQTT_BASE_TOPIC + "temperature-setpoint/status")) {
+                    targetTemp = Math.round(Float.parseFloat(new String(message.getPayload())));
+                    updateTempUI(false);
+                } else if (topic.equals(MQTT_BASE_TOPIC + "actuators/1/status")) {
+                    activatorSwitch.setOnCheckedChangeListener(null);
+                    activatorSwitch.setChecked((new String(message.getPayload())).equals("1"));
+                    activatorSwitch.setOnCheckedChangeListener(activatorSwitchListener);
+                } else if (topic.equals(MQTT_BASE_TOPIC + "actuators/2/status")) {
+                    lightSwitch.setOnCheckedChangeListener(null);
+                    lightSwitch.setChecked((new String(message.getPayload())).equals("1"));
+                    lightSwitch.setOnCheckedChangeListener(lightSwitchListener);
+                }
+            }
+
+            @Override
+            public void deliveryComplete(IMqttDeliveryToken token) {
+
+            }
+        });
     }
 
     @Override
@@ -296,50 +289,42 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-//    private void mqttConnect(){
-//        String clientId = MqttClient.generateClientId();
-//        mqttClient = new MqttAndroidClient(this.getApplicationContext(), MQTT_BROKER, clientId);
-//        try {
-//            IMqttToken token = mqttClient.connect();
-//            token.setActionCallback(new IMqttActionListener() {
-//                @Override
-//                public void onSuccess(IMqttToken asyncActionToken) {
-//                    // We are connected
-//                    System.out.println("Success. Connected to " + MQTT_BROKER);
-//                }
-//                @Override
-//                public void onFailure(IMqttToken asyncActionToken, Throwable exception) {
-//                    // Something went wrong e.g. connection timeout or firewall problems
-//                    System.out.println("Oh no! Failed to connect to " + MQTT_BROKER);
-//                }
-//            });
-//        } catch (MqttException e) {
-//            e.printStackTrace();
-//        }
-//    }
-//
-//    private void mqttSubscribe(String topicToSubscribe) {
-//        final String topic = topicToSubscribe;
-//        int qos = 1;
-//        try {
-//            IMqttToken subToken = mqttClient.subscribe(topic, qos);
-//            subToken.setActionCallback(new IMqttActionListener() {
-//                @Override
-//                public void onSuccess(IMqttToken asyncActionToken) {
-//                    System.out.println("Subscription successful to topic: " + topic);
-//                }
-//
-//                @Override
-//                public void onFailure(IMqttToken asyncActionToken, Throwable exception) {
-//                    System.out.println("Failed to subscribe to topic: " + topic);
-//                    // The subscription could not be performed, maybe the user was not
-//                    // authorized to subscribe on the specified topic e.g. using wildcards
-//                }
-//            });
-//        } catch (MqttException e) {
-//            e.printStackTrace();
-//        }
-//    }
+    private void mqttConnect(){
+        String clientId = MqttClient.generateClientId();
+        mqttClient = new MqttAndroidClient(this.getApplicationContext(), MQTT_BROKER, clientId, Ack.AUTO_ACK);
+        IMqttToken token = mqttClient.connect();
+        token.setActionCallback(new IMqttActionListener() {
+            @Override
+            public void onSuccess(IMqttToken asyncActionToken) {
+                // We are connected
+                System.out.println("Success. Connected to " + MQTT_BROKER);
+            }
+            @Override
+            public void onFailure(IMqttToken asyncActionToken, Throwable exception) {
+                // Something went wrong e.g. connection timeout or firewall problems
+                System.out.println("Oh no! Failed to connect to " + MQTT_BROKER);
+            }
+        });
+    }
+
+    private void mqttSubscribe(String topicToSubscribe) {
+        final String topic = topicToSubscribe;
+        int qos = 1;
+        IMqttToken subToken = mqttClient.subscribe(topic, qos);
+        subToken.setActionCallback(new IMqttActionListener() {
+            @Override
+            public void onSuccess(IMqttToken asyncActionToken) {
+                System.out.println("Subscription successful to topic: " + topic);
+            }
+
+            @Override
+            public void onFailure(IMqttToken asyncActionToken, Throwable exception) {
+                System.out.println("Failed to subscribe to topic: " + topic);
+                // The subscription could not be performed, maybe the user was not
+                // authorized to subscribe on the specified topic e.g. using wildcards
+            }
+        });
+    }
 
     protected void updateTempUI(boolean showSnackbar) {
         txtCurrentTemp.setText(currentTemp + "°C");
