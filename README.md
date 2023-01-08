@@ -1,5 +1,6 @@
 # SmartHome
 SmartHome is an application that allows users to control their smart devices using vocal commands, making it easy and convenient to manage their smart home.
+This application is part of a project, if you're looking for the MQTT server written in Python click [here](https://github.com/cristianlivella/SmartHomeServer)
 
 <p align="center">
   <img src="screenshot_light.jpg" alt="App Screenshot" width="200px">  
