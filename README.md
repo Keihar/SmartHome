@@ -1,6 +1,11 @@
 # SmartHome
-Voice-Controlled Smart Home Reasoner Services Android Application
-Welcome to the repository for the Voice-Controlled Smart Home Reasoner Services Android application! This application allows users to control their smart devices using vocal commands, making it easy and convenient to manage their smart home.
+SmartHome is an application that allows users to control their smart devices using vocal commands, making it easy and convenient to manage their smart home.
+
+<p align="center">
+  <img src="screenshot_light.jpg" alt="App Screenshot" width="200px">  
+  <img src="screenshot_dark.jpg" alt="App Screenshot (Dark)" width="200px">  
+</p>
+
 
 ## Features
 - User-friendly interface that makes it easy to operate the smart home system
@@ -9,7 +14,6 @@ Welcome to the repository for the Voice-Controlled Smart Home Reasoner Services 
 - Support for a variety of smart devices, including lights, appliances, and more
 
 ## Installation
-To install the Voice-Controlled Smart Home Reasoner Services Android application, follow these steps:
 
 1. Download the APK file from the releases tab of this repository
 2. Transfer the APK file to your Android device
@@ -17,23 +21,19 @@ To install the Voice-Controlled Smart Home Reasoner Services Android application
 4. Follow the on-screen instructions to complete the installation
 
 ## Usage
-To use the Voice-Controlled Smart Home Reasoner Services Android application, follow these steps:
-
 1. Open the application on your Android device
 2. Follow the on-screen instructions to set up the application (note: the application requires access to the microphone)
 3. Use the touch controls or vocal commands to operate your smart home
 
 ## Compatibility
-The Voice-Controlled Smart Home Reasoner Services Android application is compatible with Android devices running Android 8.0 and above.
+Android devices running Android 8.0 and above.
 
 ## Dependencies
-The Voice-Controlled Smart Home Reasoner Services Android application depends on the following libraries:
-
-- MQTT library for communication with the smart devices
-- SpeechRecognizer class for speech recognition
+- <a href="https://github.com/eclipse/paho.mqtt.android"> PAHO MQTT Android </a>
+- <a href="https://developer.android.com/reference/android/speech/SpeechRecognizer"> SpeechRecognizer </a>
 
 ## Development
-The Voice-Controlled Smart Home Reasoner Services Android application was developed using Java and the Android Studio IDE. To set up the development environment, you will need to install the following tools:
+SmartHome was developed using Java and the Android Studio IDE. To set up the development environment, you will need to install the following tools:
 
 - Android Studio
 - Android SDK
